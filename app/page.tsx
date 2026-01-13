@@ -246,8 +246,8 @@ export default function Home() {
           const coverPage = mergedPdf.addPage([612, 792])
           const { width, height } = coverPage.getSize()
           
-          // Calculate text dimensions
-          const coverFontSize = 24
+          // Calculate text dimensions (5 times larger = 120pt)
+          const coverFontSize = 120
           const coverTextWidth = regularFont.widthOfTextAtSize(pdfFile.coverPageText, coverFontSize)
           const coverTextHeight = regularFont.heightAtSize(coverFontSize)
           
@@ -540,17 +540,17 @@ export default function Home() {
             </h2>
             <div className={styles.files}>
               {pdfFiles.map((pdfFile, index) => (
-                <div key={pdfFile.id}>
-                  <div
-                    className={`${styles.fileItem} ${
-                      dragOverIndex === index ? styles.dragOverItem : ''
-                    } ${draggedIndex === index ? styles.dragging : ''}`}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOverItem(e, index)}
-                    onDragEnd={handleDragEnd}
-                    onDrop={(e) => handleDropItem(e, index)}
-                  >
+                <div
+                  key={pdfFile.id}
+                  className={`${styles.fileItem} ${
+                    dragOverIndex === index ? styles.dragOverItem : ''
+                  } ${draggedIndex === index ? styles.dragging : ''}`}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOverItem(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => handleDropItem(e, index)}
+                >
                   <div className={styles.fileIcon}>
                     {pdfFile.file.type === 'application/pdf' ? (
                       <svg
@@ -590,6 +590,45 @@ export default function Home() {
                     <p className={styles.fileName}>{pdfFile.name}</p>
                     <p className={styles.fileSize}>{formatFileSize(pdfFile.size)}</p>
                   </div>
+                  <div className={styles.coverPageControls}>
+                    <label className={styles.coverPageLabel}>
+                      <input
+                        type="checkbox"
+                        checked={pdfFile.hasCoverPage}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          setPdfFiles((prev) =>
+                            prev.map((file) =>
+                              file.id === pdfFile.id
+                                ? { ...file, hasCoverPage: e.target.checked }
+                                : file
+                            )
+                          )
+                        }}
+                        className={styles.coverPageCheckbox}
+                      />
+                      <span>Cover</span>
+                    </label>
+                    {pdfFile.hasCoverPage && (
+                      <input
+                        type="text"
+                        className={styles.coverPageInput}
+                        value={pdfFile.coverPageText}
+                        onChange={(e) => {
+                          setPdfFiles((prev) =>
+                            prev.map((file) =>
+                              file.id === pdfFile.id
+                                ? { ...file, coverPageText: e.target.value }
+                                : file
+                            )
+                          )
+                        }}
+                        placeholder="Cover text"
+                        onClick={(e) => e.stopPropagation()}
+                        onFocus={(e) => e.stopPropagation()}
+                      />
+                    )}
+                  </div>
                   <div className={styles.fileActions}>
                     <span className={styles.fileOrder}>{index + 1}</span>
                     <button
@@ -615,44 +654,6 @@ export default function Home() {
                       </svg>
                     </button>
                   </div>
-                </div>
-                <div className={styles.coverPageSection}>
-                  <label className={styles.coverPageLabel}>
-                    <input
-                      type="checkbox"
-                      checked={pdfFile.hasCoverPage}
-                      onChange={(e) => {
-                        setPdfFiles((prev) =>
-                          prev.map((file) =>
-                            file.id === pdfFile.id
-                              ? { ...file, hasCoverPage: e.target.checked }
-                              : file
-                          )
-                        )
-                      }}
-                      className={styles.coverPageCheckbox}
-                    />
-                    <span>Add cover page</span>
-                  </label>
-                  {pdfFile.hasCoverPage && (
-                    <input
-                      type="text"
-                      className={styles.coverPageInput}
-                      value={pdfFile.coverPageText}
-                      onChange={(e) => {
-                        setPdfFiles((prev) =>
-                          prev.map((file) =>
-                            file.id === pdfFile.id
-                              ? { ...file, coverPageText: e.target.value }
-                              : file
-                          )
-                        )
-                      }}
-                      placeholder="Enter cover page text"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  )}
-                </div>
                 </div>
               ))}
             </div>
