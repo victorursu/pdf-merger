@@ -18,6 +18,8 @@ export default function Home() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [outputFileName, setOutputFileName] = useState('robocop-alupigus')
+  const [footerText, setFooterText] = useState('')
+  const [displayPageNumber, setDisplayPageNumber] = useState(true)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -211,32 +213,69 @@ export default function Home() {
         })
       }
 
+      // Embed a regular font for footer text and page numbers
+      const regularFont = await mergedPdf.embedFont(StandardFonts.Helvetica)
+      
       // Add watermark to all pages
       const pages = mergedPdf.getPages()
-      const watermarkText = process.env.NEXT_PUBLIC_WATERMARK_TEXT || 'ROBOCOP ALUPIGUS'
+      const watermarkText = process.env.NEXT_PUBLIC_WATERMARK_TEXT || ''
       
-      pages.forEach((page) => {
+      pages.forEach((page, index) => {
         const { width, height } = page.getSize()
         
-        // Calculate text dimensions
-        const fontSize = Math.min(width, height) * 0.15 // 15% of the smaller dimension
-        const textWidth = font.widthOfTextAtSize(watermarkText, fontSize)
-        const textHeight = font.heightAtSize(fontSize)
+        // Add watermark
+        if (watermarkText) {
+          const fontSize = Math.min(width, height) * 0.15 // 15% of the smaller dimension
+          const textWidth = font.widthOfTextAtSize(watermarkText, fontSize)
+          const textHeight = font.heightAtSize(fontSize)
+          
+          // Center the watermark on the page
+          const x = (width - textWidth) / 2
+          const y = (height + textHeight) / 2
+          
+          // Draw watermark with rotation and transparency
+          page.drawText(watermarkText, {
+            x,
+            y,
+            size: fontSize,
+            font: font,
+            color: rgb(0.8, 0.8, 0.8), // Light gray color
+            opacity: 0.6, // 60% opacity (less transparent)
+            rotate: degrees(-45), // -45 degrees rotation
+          })
+        }
         
-        // Center the watermark on the page
-        const x = (width - textWidth) / 2
-        const y = (height + textHeight) / 2
+        // Add footer text and page number
+        const footerFontSize = 10
+        const footerY = 30 // Position from bottom
+        const pageNumber = index + 1
         
-        // Draw watermark with rotation and transparency
-        page.drawText(watermarkText, {
-          x,
-          y,
-          size: fontSize,
-          font: font,
-          color: rgb(0.8, 0.8, 0.8), // Light gray color
-          opacity: 0.6, // 60% opacity (less transparent)
-          rotate: degrees(-45), // -45 degrees rotation
-        })
+        // Draw footer text (centered, one line above page number)
+        if (footerText) {
+          const footerTextWidth = regularFont.widthOfTextAtSize(footerText, footerFontSize)
+          const footerTextX = (width - footerTextWidth) / 2
+          page.drawText(footerText, {
+            x: footerTextX,
+            y: footerY + (displayPageNumber ? 15 : 0), // One line above page number if page number is displayed
+            size: footerFontSize,
+            font: regularFont,
+            color: rgb(0, 0, 0),
+          })
+        }
+        
+        // Draw page number (centered at bottom)
+        if (displayPageNumber) {
+          const pageNumberText = `Page ${pageNumber}`
+          const pageNumberWidth = regularFont.widthOfTextAtSize(pageNumberText, footerFontSize)
+          const pageNumberX = (width - pageNumberWidth) / 2
+          page.drawText(pageNumberText, {
+            x: pageNumberX,
+            y: footerY,
+            size: footerFontSize,
+            font: regularFont,
+            color: rgb(0, 0, 0),
+          })
+        }
       })
 
       const pdfBytes = await mergedPdf.save()
@@ -261,7 +300,7 @@ export default function Home() {
     } finally {
       setIsMerging(false)
     }
-  }, [pdfFiles, outputFileName])
+  }, [pdfFiles, outputFileName, footerText, displayPageNumber])
 
   return (
     <main className={styles.main}>
@@ -434,6 +473,30 @@ export default function Home() {
               <p className={styles.outputFileNameHint}>
                 Will be saved as: {sanitizeFileName(outputFileName)}
               </p>
+            </div>
+            <div className={styles.footerSection}>
+              <label htmlFor="footerText" className={styles.footerLabel}>
+                Footer Text
+              </label>
+              <input
+                id="footerText"
+                type="text"
+                className={styles.footerInput}
+                value={footerText}
+                onChange={(e) => setFooterText(e.target.value)}
+                placeholder="Enter footer text (optional)"
+              />
+            </div>
+            <div className={styles.pageNumberToggleSection}>
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={displayPageNumber}
+                  onChange={(e) => setDisplayPageNumber(e.target.checked)}
+                  className={styles.toggleInput}
+                />
+                <span className={styles.toggleText}>Display page number</span>
+              </label>
             </div>
             <button
               className={styles.mergeButton}
