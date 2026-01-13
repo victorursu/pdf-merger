@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib'
+import { PDFDocument, StandardFonts, degrees, rgb, PDFImage } from 'pdf-lib'
 import styles from './page.module.css'
 
 interface PDFFile {
@@ -57,7 +57,11 @@ export default function Home() {
     const limitMessage = process.env.NEXT_PUBLIC_LIMIT_MESSAGE || 'LIMITS CAN BE LIFTED BY VICTOR'
 
     const pdfFilesArray = Array.from(files).filter(
-      (file) => file.type === 'application/pdf'
+      (file) =>
+        file.type === 'application/pdf' ||
+        file.type === 'image/jpeg' ||
+        file.type === 'image/jpg' ||
+        file.type === 'image/png'
     )
 
     // Validate total number of files (existing + new)
@@ -207,11 +211,40 @@ export default function Home() {
 
       for (const pdfFile of pdfFiles) {
         const arrayBuffer = await pdfFile.file.arrayBuffer()
-        const pdf = await PDFDocument.load(arrayBuffer)
-        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-        pages.forEach((page) => {
-          mergedPdf.addPage(page)
-        })
+        const fileType = pdfFile.file.type
+
+        if (fileType === 'application/pdf') {
+          // Handle PDF files
+          const pdf = await PDFDocument.load(arrayBuffer)
+          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
+          pages.forEach((page) => {
+            mergedPdf.addPage(page)
+          })
+        } else if (
+          fileType === 'image/jpeg' ||
+          fileType === 'image/jpg' ||
+          fileType === 'image/png'
+        ) {
+          // Handle image files - convert to PDF page
+          let image: PDFImage
+          if (fileType === 'image/png') {
+            image = await mergedPdf.embedPng(arrayBuffer)
+          } else {
+            image = await mergedPdf.embedJpg(arrayBuffer)
+          }
+
+          // Create a page with the image dimensions
+          const imageDims = image.scale(1)
+          const page = mergedPdf.addPage([imageDims.width, imageDims.height])
+
+          // Draw the image on the page
+          page.drawImage(image, {
+            x: 0,
+            y: 0,
+            width: imageDims.width,
+            height: imageDims.height,
+          })
+        }
       }
 
       // Embed a regular font for footer text and page numbers
@@ -364,6 +397,25 @@ export default function Home() {
         <p className={styles.subtitle}>
           Drag and drop PDF files, reorder them, and merge into one
         </p>
+        <div className={styles.infoMessage}>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>
+            You can also merge images (JPG, JPEG, PNG) along with PDFs. Images will be converted to PDF pages.
+          </span>
+        </div>
 
         <div
           className={`${styles.dropZone} ${isDragging ? styles.dragOver : ''}`}
@@ -376,7 +428,7 @@ export default function Home() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="application/pdf"
+            accept="application/pdf,image/jpeg,image/jpg,image/png"
             multiple
             onChange={handleFileInputChange}
             className={styles.fileInput}
@@ -423,22 +475,39 @@ export default function Home() {
                   onDrop={(e) => handleDropItem(e, index)}
                 >
                   <div className={styles.fileIcon}>
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                      <polyline points="10 9 9 9 8 9" />
-                    </svg>
+                    {pdfFile.file.type === 'application/pdf' ? (
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    )}
                   </div>
                   <div className={styles.fileInfo}>
                     <p className={styles.fileName}>{pdfFile.name}</p>
