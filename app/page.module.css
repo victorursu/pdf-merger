@@ -499,10 +499,42 @@
 
 .bmcContainer {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
+  min-height: 300px;
   padding: 2rem 0;
+}
+
+.bmcHint {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.bmcLink {
+  color: var(--accent);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.bmcLink:hover {
+  color: var(--accent-hover);
+}
+
+.bmcEmbedButton {
+  display: inline-block;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.bmcEmbedButton:hover {
+  transform: scale(1.05);
+}
+
+.bmcEmbedButton img {
+  border-radius: 8px;
 }
 
 @media (max-width: 768px) {
