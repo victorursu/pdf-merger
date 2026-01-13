@@ -42,29 +42,29 @@
 
 .buyMeCoffeeButton {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  top: 1.5rem;
+  left: 1.5rem;
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
-  border: 2px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  border: 2px solid #fbbf24;
+  background: #fbbf24;
+  color: #1a1a1a;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
   z-index: 1000;
-  box-shadow: 0 4px 12px var(--shadow);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .buyMeCoffeeButton:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
+  background: #f59e0b;
+  border-color: #f59e0b;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--shadow);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
 }
 
 .buyMeCoffeeButton:active {
@@ -526,14 +526,10 @@
   }
 
   .buyMeCoffeeButton {
-    bottom: 1rem;
-    right: 1rem;
+    top: 1rem;
+    left: 1rem;
     padding: 0.625rem 1rem;
     font-size: 0.75rem;
-  }
-
-  .buyMeCoffeeButton span {
-    display: none;
   }
 
   .popupContent {
