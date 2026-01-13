@@ -17,7 +17,7 @@ export default function Home() {
   const [isMerging, setIsMerging] = useState(false)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const [outputFileName, setOutputFileName] = useState('robocop-alupigus')
+  const [outputFileName, setOutputFileName] = useState('combined')
   const [footerText, setFooterText] = useState('')
   const [displayPageNumber, setDisplayPageNumber] = useState(true)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
@@ -468,7 +468,7 @@ export default function Home() {
                 className={styles.outputFileNameInput}
                 value={outputFileName}
                 onChange={(e) => setOutputFileName(e.target.value)}
-                placeholder="robocop-alupigus"
+                placeholder="combined"
               />
               <p className={styles.outputFileNameHint}>
                 Will be saved as: {sanitizeFileName(outputFileName)}
