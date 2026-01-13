@@ -34,6 +34,7 @@ export default function Home() {
   const [footerText, setFooterText] = useState('')
   const [displayPageNumber, setDisplayPageNumber] = useState(true)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+  const [showHelpModal, setShowHelpModal] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -548,9 +549,30 @@ export default function Home() {
 
         {pdfFiles.length > 0 && (
           <div className={styles.fileList}>
-            <h2 className={styles.fileListTitle}>
-              Files ({pdfFiles.length})
-            </h2>
+            <div className={styles.fileListHeader}>
+              <h2 className={styles.fileListTitle}>
+                Files ({pdfFiles.length})
+              </h2>
+              <button
+                className={styles.helpButton}
+                onClick={() => setShowHelpModal(true)}
+                aria-label="Show help"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
             <div className={styles.files}>
               {pdfFiles.map((pdfFile, index) => (
                 <div
@@ -735,6 +757,71 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowHelpModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={styles.modalClose}
+              onClick={() => setShowHelpModal(false)}
+              aria-label="Close"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <h2 className={styles.modalTitle}>Feature Guide</h2>
+            <div className={styles.modalBody}>
+              <div className={styles.helpSection}>
+                <h3 className={styles.helpSectionTitle}>Divider Page</h3>
+                <p className={styles.helpText}>
+                  A divider page is a blank page inserted before a file in the merged PDF. 
+                  Check the "Divider page" checkbox and enter text to create a cover/divider page.
+                </p>
+                <p className={styles.helpText}>
+                  <strong>Multi-line text:</strong> Use the pipe character (<code>|</code>) to break text into multiple lines. 
+                  For example: <code>Line 1|Line 2|Line 3</code> will create three centered lines on the divider page.
+                </p>
+              </div>
+
+              <div className={styles.helpSection}>
+                <h3 className={styles.helpSectionTitle}>Output Filename</h3>
+                <p className={styles.helpText}>
+                  Enter the name for your merged PDF file. The filename will be automatically sanitized:
+                  converted to lowercase, spaces and special characters replaced with dashes, and the .pdf extension added.
+                </p>
+              </div>
+
+              <div className={styles.helpSection}>
+                <h3 className={styles.helpSectionTitle}>Footer Text</h3>
+                <p className={styles.helpText}>
+                  Enter text to display at the bottom of every page in the merged PDF. 
+                  The footer text appears centered, one line above the page number (if page numbers are enabled).
+                </p>
+              </div>
+
+              <div className={styles.helpSection}>
+                <h3 className={styles.helpSectionTitle}>Display Page Number</h3>
+                <p className={styles.helpText}>
+                  Toggle this checkbox to show or hide page numbers on each page. 
+                  When enabled, page numbers appear at the bottom center of each page (e.g., "Page 1", "Page 2").
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
