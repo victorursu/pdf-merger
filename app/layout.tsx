@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import GoogleAnalytics from './components/GoogleAnalytics'
 
 export const metadata: Metadata = {
   title: 'PDF Merger',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-theme="dark">
-      <body>{children}</body>
+      <body>
+        <GoogleAnalytics />
+        {children}
+      </body>
     </html>
   )
 }

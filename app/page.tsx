@@ -4,6 +4,17 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { PDFDocument, StandardFonts, degrees, rgb, PDFImage } from 'pdf-lib'
 import styles from './page.module.css'
 
+declare global {
+  interface Window {
+    gtag: (
+      command: string,
+      targetId: string,
+      config?: Record<string, any>
+    ) => void
+    dataLayer: any[]
+  }
+}
+
 interface PDFFile {
   id: string
   file: File
@@ -199,8 +210,22 @@ export default function Home() {
     return `${sanitized}.pdf`
   }
 
+  const trackEvent = useCallback((eventName: string, parameters?: Record<string, any>) => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', eventName, parameters)
+    }
+  }, [])
+
   const mergePDFs = useCallback(async () => {
     if (pdfFiles.length === 0) return
+
+    // Track merge button click with file count and footer text
+    trackEvent('merge_pdf_clicked', {
+      file_count: pdfFiles.length,
+      footer_text: footerText || '(empty)',
+      has_footer_text: footerText.length > 0,
+      display_page_number: displayPageNumber,
+    })
 
     setIsMerging(true)
     try {
@@ -344,6 +369,13 @@ export default function Home() {
         rel="noopener noreferrer"
         className={styles.buyMeCoffeeButton}
         aria-label="Buy me a coffee"
+        onClick={() => {
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'buy_me_coffee_clicked', {
+              link_url: 'https://www.buymeacoffee.com/victoru',
+            })
+          }
+        }}
       >
         <img
           src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
@@ -584,7 +616,20 @@ export default function Home() {
                 type="text"
                 className={styles.footerInput}
                 value={footerText}
-                onChange={(e) => setFooterText(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value
+                  setFooterText(newValue)
+                  // Track footer text input (debounced to avoid too many events)
+                  if (typeof window !== 'undefined' && window.gtag) {
+                    clearTimeout((window as any).footerTextTimeout)
+                    ;(window as any).footerTextTimeout = setTimeout(() => {
+                      window.gtag('event', 'footer_text_entered', {
+                        footer_text: newValue || '(empty)',
+                        footer_text_length: newValue.length,
+                      })
+                    }, 1000) // Track after 1 second of no typing
+                  }
+                }}
                 placeholder="Enter footer text (optional)"
               />
             </div>
