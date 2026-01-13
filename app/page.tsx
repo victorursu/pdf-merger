@@ -21,9 +21,7 @@ export default function Home() {
   const [footerText, setFooterText] = useState('')
   const [displayPageNumber, setDisplayPageNumber] = useState(true)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
-  const [showBuyMeCoffee, setShowBuyMeCoffee] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const bmcScriptLoaded = useRef(false)
 
   useEffect(() => {
     // Initialize theme from document
@@ -36,86 +34,6 @@ export default function Home() {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
-  useEffect(() => {
-    // Load Buy Me a Coffee script when popup opens
-    if (showBuyMeCoffee) {
-      // Remove existing script if any
-      const existingScript = document.getElementById('bmc-widget-script')
-      if (existingScript) {
-        existingScript.remove()
-      }
-
-      // Remove any existing floating widget buttons
-      const existingFloatingWidget = document.querySelector('[data-name="BMC-Widget"]')
-      if (existingFloatingWidget) {
-        existingFloatingWidget.remove()
-      }
-
-      // Clear container
-      const widgetContainer = document.getElementById('bmc-wbtn')
-      if (widgetContainer) {
-        widgetContainer.innerHTML = ''
-      }
-
-      if (!bmcScriptLoaded.current) {
-        const script = document.createElement('script')
-        script.setAttribute('data-name', 'BMC-Widget')
-        script.setAttribute('data-cfasync', 'false')
-        script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js'
-        script.setAttribute('data-id', 'victoru')
-        script.setAttribute('data-description', 'Support me on Buy me a coffee!')
-        script.setAttribute('data-message', 'Every coffee fuels my passion for building useful tools, exploring new technologies, and creating experiences that make a difference. I truly appreciate you being part of this journey. ')
-        script.setAttribute('data-color', '#5F7FFF')
-        script.setAttribute('data-position', 'Right')
-        script.setAttribute('data-x_margin', '18')
-        script.setAttribute('data-y_margin', '18')
-        script.id = 'bmc-widget-script'
-        script.async = true
-        
-        script.onload = () => {
-          bmcScriptLoaded.current = true
-          
-          // The widget creates a floating button, try to move it to our container
-          setTimeout(() => {
-            const floatingButton = document.querySelector('[data-name="BMC-Widget"]') as HTMLElement
-            const widgetContainer = document.getElementById('bmc-wbtn')
-            
-            if (floatingButton && widgetContainer) {
-              // Hide the floating button and create an embed in our container
-              floatingButton.style.display = 'none'
-              
-              // Create an iframe or direct link as fallback
-              const embedLink = document.createElement('a')
-              embedLink.href = 'https://www.buymeacoffee.com/victoru'
-              embedLink.target = '_blank'
-              embedLink.rel = 'noopener noreferrer'
-              embedLink.className = styles.bmcEmbedButton
-              embedLink.innerHTML = `
-                <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" />
-              `
-              widgetContainer.appendChild(embedLink)
-            }
-          }, 1000)
-        }
-        
-        document.body.appendChild(script)
-      } else {
-        // Script already loaded, just show the embed
-        const widgetContainer = document.getElementById('bmc-wbtn')
-        if (widgetContainer && widgetContainer.children.length === 0) {
-          const embedLink = document.createElement('a')
-          embedLink.href = 'https://www.buymeacoffee.com/victoru'
-          embedLink.target = '_blank'
-          embedLink.rel = 'noopener noreferrer'
-          embedLink.className = styles.bmcEmbedButton
-          embedLink.innerHTML = `
-            <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" />
-          `
-          widgetContainer.appendChild(embedLink)
-        }
-      }
-    }
-  }, [showBuyMeCoffee])
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
@@ -387,29 +305,19 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <button
+      <a
+        href="https://www.buymeacoffee.com/victoru"
+        target="_blank"
+        rel="noopener noreferrer"
         className={styles.buyMeCoffeeButton}
-        onClick={() => setShowBuyMeCoffee(true)}
         aria-label="Buy me a coffee"
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-          <line x1="6" y1="1" x2="6" y2="4" />
-          <line x1="10" y1="1" x2="10" y2="4" />
-          <line x1="14" y1="1" x2="14" y2="4" />
-        </svg>
-        <span>Buy me a coffee</span>
-      </button>
+        <img
+          src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+          alt="Buy Me A Coffee"
+          className={styles.bmcButtonImage}
+        />
+      </a>
       <button
         className={styles.themeToggle}
         onClick={toggleTheme}
@@ -614,47 +522,6 @@ export default function Home() {
           </div>
         )}
       </div>
-      
-      {/* Buy Me a Coffee Popup */}
-      {showBuyMeCoffee && (
-        <div className={styles.popupOverlay} onClick={() => setShowBuyMeCoffee(false)}>
-          <div className={styles.popupContent} onClick={(e) => e.stopPropagation()}>
-            <button
-              className={styles.popupClose}
-              onClick={() => setShowBuyMeCoffee(false)}
-              aria-label="Close"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <div className={styles.bmcContainer}>
-              <div id="bmc-wbtn" style={{ minHeight: '200px' }}></div>
-              <p className={styles.bmcHint}>
-                If the widget doesn't appear, you can visit{' '}
-                <a
-                  href="https://www.buymeacoffee.com/victoru"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.bmcLink}
-                >
-                  buymeacoffee.com/victoru
-                </a>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }
