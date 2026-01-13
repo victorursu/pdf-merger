@@ -40,6 +40,37 @@
   position: relative;
 }
 
+.buyMeCoffeeButton {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 12px var(--shadow);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.buyMeCoffeeButton:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+
+.buyMeCoffeeButton:active {
+  transform: translateY(0);
+}
+
 .themeToggle {
   position: fixed;
   top: 1.5rem;
@@ -391,6 +422,89 @@
   cursor: not-allowed;
 }
 
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.popupContent {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.popupClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.popupClose:hover {
+  background: var(--bg-hover);
+  transform: scale(1.1);
+}
+
+.popupClose:active {
+  transform: scale(0.95);
+}
+
+.bmcContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 2rem 0;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 2rem 1.5rem;
@@ -409,5 +523,21 @@
     right: 1rem;
     width: 40px;
     height: 40px;
+  }
+
+  .buyMeCoffeeButton {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .buyMeCoffeeButton span {
+    display: none;
+  }
+
+  .popupContent {
+    padding: 1.5rem;
+    width: 95%;
   }
 }
