@@ -23,18 +23,18 @@ npm install
 Create a `.env` file in the root directory with configuration:
 
 ```bash
-NEXT_PUBLIC_WATERMARK_TEXT=ROBOCOP ALUPIGUS
+NEXT_PUBLIC_WATERMARK_TEXT=ROBOCOP
 NEXT_PUBLIC_MAX_FILES=3
 NEXT_PUBLIC_MAX_FILE_SIZE_MB=10
-NEXT_PUBLIC_LIMIT_MESSAGE=LIMITS CAN BE LIFTED BY VICTOR
+NEXT_PUBLIC_LIMIT_MESSAGE=LOREM IPSUM
 ```
 
 ### Environment Variables
 
-- `NEXT_PUBLIC_WATERMARK_TEXT` - Text to display as watermark on each page (default: "ROBOCOP ALUPIGUS")
+- `NEXT_PUBLIC_WATERMARK_TEXT` - Text to display as watermark on each page (default: "ROBOCOP")
 - `NEXT_PUBLIC_MAX_FILES` - Maximum number of PDF files that can be uploaded (default: 3)
 - `NEXT_PUBLIC_MAX_FILE_SIZE_MB` - Maximum file size per file in megabytes (default: 10)
-- `NEXT_PUBLIC_LIMIT_MESSAGE` - Custom message displayed at the end of validation error messages (default: "LIMITS CAN BE LIFTED BY VICTOR")
+- `NEXT_PUBLIC_LIMIT_MESSAGE` - Custom message displayed at the end of validation error messages (default: "LIMITS CAN BE LIFTED BY ADMINS")
 
 Then, run the development server:
 
