@@ -246,22 +246,35 @@ export default function Home() {
           const coverPage = mergedPdf.addPage([612, 792])
           const { width, height } = coverPage.getSize()
           
-          // Calculate text dimensions (5 times larger = 120pt)
-          const coverFontSize = 120
-          const coverTextWidth = regularFont.widthOfTextAtSize(pdfFile.coverPageText, coverFontSize)
-          const coverTextHeight = regularFont.heightAtSize(coverFontSize)
+          // Get font size from environment variable, default to 24
+          const coverFontSize = parseInt(
+            process.env.NEXT_PUBLIC_COVER_PAGE_FONT_SIZE || '24',
+            10
+          )
           
-          // Center the text both horizontally and vertically
-          const x = (width - coverTextWidth) / 2
-          const y = (height + coverTextHeight) / 2
+          // Split text by | to create multiple lines
+          const textLines = pdfFile.coverPageText.split('|').map((line) => line.trim())
+          const lineHeight = regularFont.heightAtSize(coverFontSize) * 1.2 // 1.2 line spacing
+          const totalHeight = textLines.length * lineHeight
           
-          // Draw the cover page text
-          coverPage.drawText(pdfFile.coverPageText, {
-            x,
-            y,
-            size: coverFontSize,
-            font: regularFont,
-            color: rgb(0, 0, 0),
+          // Calculate starting Y position to center all lines vertically
+          const startY = (height + totalHeight) / 2
+          
+          // Draw each line, centered horizontally
+          textLines.forEach((line, lineIndex) => {
+            if (line) {
+              const lineWidth = regularFont.widthOfTextAtSize(line, coverFontSize)
+              const x = (width - lineWidth) / 2
+              const y = startY - (lineIndex * lineHeight)
+              
+              coverPage.drawText(line, {
+                x,
+                y,
+                size: coverFontSize,
+                font: regularFont,
+                color: rgb(0, 0, 0),
+              })
+            }
           })
         }
 
