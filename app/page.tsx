@@ -359,7 +359,7 @@ export default function Home() {
     } finally {
       setIsMerging(false)
     }
-  }, [pdfFiles, outputFileName, footerText, displayPageNumber])
+  }, [pdfFiles, outputFileName, footerText, displayPageNumber, trackEvent])
 
   return (
     <main className={styles.main}>
