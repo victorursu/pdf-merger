@@ -450,8 +450,8 @@ export default function Home() {
             </svg>
             <p className={styles.dropZoneText}>
               {isDragging
-                ? 'Drop PDF files here'
-                : 'Click or drag PDF files here to upload'}
+                ? 'Drop PDF files or images here'
+                : 'Click or drag PDF files and images (JPG, PNG) here to upload'}
             </p>
           </div>
         </div>
@@ -459,7 +459,7 @@ export default function Home() {
         {pdfFiles.length > 0 && (
           <div className={styles.fileList}>
             <h2 className={styles.fileListTitle}>
-              PDF Files ({pdfFiles.length})
+              Files ({pdfFiles.length})
             </h2>
             <div className={styles.files}>
               {pdfFiles.map((pdfFile, index) => (
