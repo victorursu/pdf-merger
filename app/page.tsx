@@ -47,9 +47,32 @@ export default function Home() {
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return
 
+    // Get validation limits from environment variables
+    const maxFiles = parseInt(process.env.NEXT_PUBLIC_MAX_FILES || '3', 10)
+    const maxFileSizeMB = parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE_MB || '10', 10)
+    const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024 // Convert MB to bytes
+
+    const pdfFilesArray = Array.from(files).filter(
+      (file) => file.type === 'application/pdf'
+    )
+
+    // Validate total number of files (existing + new)
+    const totalFiles = pdfFiles.length + pdfFilesArray.length
+    if (totalFiles > maxFiles) {
+      alert(
+        `Maximum ${maxFiles} file${maxFiles > 1 ? 's' : ''} allowed. You are trying to add ${pdfFilesArray.length} file${pdfFilesArray.length > 1 ? 's' : ''}, but you already have ${pdfFiles.length} file${pdfFiles.length > 1 ? 's' : ''}.`
+      )
+      return
+    }
+
+    // Validate file sizes
+    const oversizedFiles: string[] = []
     const newFiles: PDFFile[] = []
-    Array.from(files).forEach((file) => {
-      if (file.type === 'application/pdf') {
+
+    pdfFilesArray.forEach((file) => {
+      if (file.size > maxFileSizeBytes) {
+        oversizedFiles.push(file.name)
+      } else {
         newFiles.push({
           id: `${Date.now()}-${Math.random()}`,
           file,
@@ -59,8 +82,16 @@ export default function Home() {
       }
     })
 
-    setPdfFiles((prev) => [...prev, ...newFiles])
-  }, [])
+    if (oversizedFiles.length > 0) {
+      alert(
+        `The following file${oversizedFiles.length > 1 ? 's' : ''} exceed${oversizedFiles.length > 1 ? '' : 's'} the maximum size of ${maxFileSizeMB}MB:\n${oversizedFiles.join('\n')}`
+      )
+    }
+
+    if (newFiles.length > 0) {
+      setPdfFiles((prev) => [...prev, ...newFiles])
+    }
+  }, [pdfFiles])
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault()
