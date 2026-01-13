@@ -269,6 +269,56 @@
   transform: translateX(8px);
 }
 
+.coverPageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.coverPageLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.coverPageCheckbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.coverPageInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.coverPageInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.coverPageInput::placeholder {
+  color: var(--text-tertiary);
+}
+
 .fileIcon {
   color: var(--accent);
   flex-shrink: 0;

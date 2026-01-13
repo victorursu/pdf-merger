@@ -20,6 +20,8 @@ interface PDFFile {
   file: File
   name: string
   size: number
+  hasCoverPage: boolean
+  coverPageText: string
 }
 
 export default function Home() {
@@ -97,6 +99,8 @@ export default function Home() {
           file,
           name: file.name,
           size: file.size,
+          hasCoverPage: false,
+          coverPageText: '',
         })
       }
     })
@@ -231,10 +235,36 @@ export default function Home() {
     try {
       const mergedPdf = await PDFDocument.create()
       
-      // Embed a font for the watermark
+      // Embed fonts for watermark and cover pages
       const font = await mergedPdf.embedFont(StandardFonts.HelveticaBold)
+      const regularFont = await mergedPdf.embedFont(StandardFonts.Helvetica)
 
       for (const pdfFile of pdfFiles) {
+        // Add cover page if checkbox is checked and text is provided
+        if (pdfFile.hasCoverPage && pdfFile.coverPageText.trim()) {
+          // Create a standard letter-size page for cover (8.5 x 11 inches = 612 x 792 points)
+          const coverPage = mergedPdf.addPage([612, 792])
+          const { width, height } = coverPage.getSize()
+          
+          // Calculate text dimensions
+          const coverFontSize = 24
+          const coverTextWidth = regularFont.widthOfTextAtSize(pdfFile.coverPageText, coverFontSize)
+          const coverTextHeight = regularFont.heightAtSize(coverFontSize)
+          
+          // Center the text both horizontally and vertically
+          const x = (width - coverTextWidth) / 2
+          const y = (height + coverTextHeight) / 2
+          
+          // Draw the cover page text
+          coverPage.drawText(pdfFile.coverPageText, {
+            x,
+            y,
+            size: coverFontSize,
+            font: regularFont,
+            color: rgb(0, 0, 0),
+          })
+        }
+
         const arrayBuffer = await pdfFile.file.arrayBuffer()
         const fileType = pdfFile.file.type
 
@@ -588,6 +618,43 @@ export default function Home() {
                       </svg>
                     </button>
                   </div>
+                </div>
+                <div className={styles.coverPageSection}>
+                  <label className={styles.coverPageLabel}>
+                    <input
+                      type="checkbox"
+                      checked={pdfFile.hasCoverPage}
+                      onChange={(e) => {
+                        setPdfFiles((prev) =>
+                          prev.map((file) =>
+                            file.id === pdfFile.id
+                              ? { ...file, hasCoverPage: e.target.checked }
+                              : file
+                          )
+                        )
+                      }}
+                      className={styles.coverPageCheckbox}
+                    />
+                    <span>Add cover page</span>
+                  </label>
+                  {pdfFile.hasCoverPage && (
+                    <input
+                      type="text"
+                      className={styles.coverPageInput}
+                      value={pdfFile.coverPageText}
+                      onChange={(e) => {
+                        setPdfFiles((prev) =>
+                          prev.map((file) =>
+                            file.id === pdfFile.id
+                              ? { ...file, coverPageText: e.target.value }
+                              : file
+                          )
+                        )
+                      }}
+                      placeholder="Enter cover page text"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
                 </div>
               ))}
             </div>
