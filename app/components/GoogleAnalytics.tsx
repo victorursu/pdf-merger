@@ -17,18 +17,6 @@ declare global {
 export default function GoogleAnalytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID
 
-  useEffect(() => {
-    if (gaId && typeof window !== 'undefined') {
-      window.dataLayer = window.dataLayer || []
-      function gtag(...args: any[]) {
-        window.dataLayer.push(args)
-      }
-      window.gtag = gtag as any
-      window.gtag('js', new Date())
-      window.gtag('config', gaId)
-    }
-  }, [gaId])
-
   if (!gaId) {
     return null
   }
