@@ -241,7 +241,7 @@
 
 .fileItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
   background: var(--bg-tertiary);
@@ -323,6 +323,8 @@
 .fileIcon {
   color: var(--accent);
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.25rem;
 }
 
 .fileContent {
