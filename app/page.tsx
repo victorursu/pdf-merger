@@ -599,48 +599,50 @@ export default function Home() {
                       </svg>
                     )}
                   </div>
-                  <div className={styles.fileInfo}>
-                    <p className={styles.fileName}>{pdfFile.name}</p>
-                    <p className={styles.fileSize}>{formatFileSize(pdfFile.size)}</p>
-                  </div>
-                  <div className={styles.coverPageControls}>
-                    <label className={styles.coverPageLabel}>
-                      <input
-                        type="checkbox"
-                        checked={pdfFile.hasCoverPage}
-                        onChange={(e) => {
-                          e.stopPropagation()
-                          setPdfFiles((prev) =>
-                            prev.map((file) =>
-                              file.id === pdfFile.id
-                                ? { ...file, hasCoverPage: e.target.checked }
-                                : file
+                  <div className={styles.fileContent}>
+                    <div className={styles.coverPageControls}>
+                      <label className={styles.coverPageLabel}>
+                        <input
+                          type="checkbox"
+                          checked={pdfFile.hasCoverPage}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            setPdfFiles((prev) =>
+                              prev.map((file) =>
+                                file.id === pdfFile.id
+                                  ? { ...file, hasCoverPage: e.target.checked }
+                                  : file
+                              )
                             )
-                          )
-                        }}
-                        className={styles.coverPageCheckbox}
-                      />
-                      <span>Cover</span>
-                    </label>
-                    {pdfFile.hasCoverPage && (
-                      <input
-                        type="text"
-                        className={styles.coverPageInput}
-                        value={pdfFile.coverPageText}
-                        onChange={(e) => {
-                          setPdfFiles((prev) =>
-                            prev.map((file) =>
-                              file.id === pdfFile.id
-                                ? { ...file, coverPageText: e.target.value }
-                                : file
+                          }}
+                          className={styles.coverPageCheckbox}
+                        />
+                        <span>Divider page</span>
+                      </label>
+                      {pdfFile.hasCoverPage && (
+                        <input
+                          type="text"
+                          className={styles.coverPageInput}
+                          value={pdfFile.coverPageText}
+                          onChange={(e) => {
+                            setPdfFiles((prev) =>
+                              prev.map((file) =>
+                                file.id === pdfFile.id
+                                  ? { ...file, coverPageText: e.target.value }
+                                  : file
+                              )
                             )
-                          )
-                        }}
-                        placeholder="Cover text"
-                        onClick={(e) => e.stopPropagation()}
-                        onFocus={(e) => e.stopPropagation()}
-                      />
-                    )}
+                          }}
+                          placeholder="Divider text"
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.stopPropagation()}
+                        />
+                      )}
+                    </div>
+                    <div className={styles.fileInfo}>
+                      <p className={styles.fileName}>{pdfFile.name}</p>
+                      <p className={styles.fileSize}>{formatFileSize(pdfFile.size)}</p>
+                    </div>
                   </div>
                   <div className={styles.fileActions}>
                     <span className={styles.fileOrder}>{index + 1}</span>
