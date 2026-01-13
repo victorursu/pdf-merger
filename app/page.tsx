@@ -468,7 +468,7 @@ export default function Home() {
       <div className={styles.container}>
         <h1 className={styles.title}>PDF Merger</h1>
         <p className={styles.subtitle}>
-          Drag and drop PDF files, reorder them, and merge into one
+          Drag and drop PDF or image files, reorder them, and merge into a single PDF
         </p>
         <div className={styles.infoMessage}>
           <svg
