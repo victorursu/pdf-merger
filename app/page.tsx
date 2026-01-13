@@ -235,7 +235,7 @@ export default function Home() {
     try {
       const mergedPdf = await PDFDocument.create()
       
-      // Embed fonts for watermark and cover pages
+      // Embed fonts for watermark, cover pages, and footer
       const font = await mergedPdf.embedFont(StandardFonts.HelveticaBold)
       const regularFont = await mergedPdf.embedFont(StandardFonts.Helvetica)
 
@@ -302,9 +302,6 @@ export default function Home() {
         }
       }
 
-      // Embed a regular font for footer text and page numbers
-      const regularFont = await mergedPdf.embedFont(StandardFonts.Helvetica)
-      
       // Add watermark to all pages
       const pages = mergedPdf.getPages()
       const watermarkText = process.env.NEXT_PUBLIC_WATERMARK_TEXT || ''
@@ -543,17 +540,17 @@ export default function Home() {
             </h2>
             <div className={styles.files}>
               {pdfFiles.map((pdfFile, index) => (
-                <div
-                  key={pdfFile.id}
-                  className={`${styles.fileItem} ${
-                    dragOverIndex === index ? styles.dragOverItem : ''
-                  } ${draggedIndex === index ? styles.dragging : ''}`}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOverItem(e, index)}
-                  onDragEnd={handleDragEnd}
-                  onDrop={(e) => handleDropItem(e, index)}
-                >
+                <div key={pdfFile.id}>
+                  <div
+                    className={`${styles.fileItem} ${
+                      dragOverIndex === index ? styles.dragOverItem : ''
+                    } ${draggedIndex === index ? styles.dragging : ''}`}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOverItem(e, index)}
+                    onDragEnd={handleDragEnd}
+                    onDrop={(e) => handleDropItem(e, index)}
+                  >
                   <div className={styles.fileIcon}>
                     {pdfFile.file.type === 'application/pdf' ? (
                       <svg
