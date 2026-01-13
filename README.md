@@ -35,6 +35,7 @@ NEXT_PUBLIC_LIMIT_MESSAGE=LOREM IPSUM
 - `NEXT_PUBLIC_MAX_FILES` - Maximum number of PDF files that can be uploaded (default: 3)
 - `NEXT_PUBLIC_MAX_FILE_SIZE_MB` - Maximum file size per file in megabytes (default: 10)
 - `NEXT_PUBLIC_LIMIT_MESSAGE` - Custom message displayed at the end of validation error messages (default: "LIMITS CAN BE LIFTED BY ADMINS")
+- `NEXT_PUBLIC_COVER_PAGE_FONT_SIZE` - Font size in points for cover page text (default: 24). Use `|` in cover page text to create line breaks.
 
 Then, run the development server:
 
