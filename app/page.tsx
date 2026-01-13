@@ -416,6 +416,24 @@ export default function Home() {
             You can also merge images (JPG, JPEG, PNG) along with PDFs. Images will be converted to PDF pages.
           </span>
         </div>
+        <div className={styles.securityMessage}>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          <div>
+            <strong>100% Secure & Private:</strong> All file processing happens entirely in your browser. Your files never leave your device and are never uploaded to any server. Everything is processed locally for maximum privacy and security.
+          </div>
+        </div>
 
         <div
           className={`${styles.dropZone} ${isDragging ? styles.dragOver : ''}`}
