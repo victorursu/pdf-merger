@@ -51,6 +51,7 @@ export default function Home() {
     const maxFiles = parseInt(process.env.NEXT_PUBLIC_MAX_FILES || '3', 10)
     const maxFileSizeMB = parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE_MB || '10', 10)
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024 // Convert MB to bytes
+    const limitMessage = process.env.NEXT_PUBLIC_LIMIT_MESSAGE || 'LIMITS CAN BE LIFTED BY VICTOR'
 
     const pdfFilesArray = Array.from(files).filter(
       (file) => file.type === 'application/pdf'
@@ -60,7 +61,7 @@ export default function Home() {
     const totalFiles = pdfFiles.length + pdfFilesArray.length
     if (totalFiles > maxFiles) {
       alert(
-        `Maximum ${maxFiles} file${maxFiles > 1 ? 's' : ''} allowed. You are trying to add ${pdfFilesArray.length} file${pdfFilesArray.length > 1 ? 's' : ''}, but you already have ${pdfFiles.length} file${pdfFiles.length > 1 ? 's' : ''}.`
+        `Maximum ${maxFiles} file${maxFiles > 1 ? 's' : ''} allowed. You are trying to add ${pdfFilesArray.length} file${pdfFilesArray.length > 1 ? 's' : ''}, but you already have ${pdfFiles.length} file${pdfFiles.length > 1 ? 's' : ''}.\n\n${limitMessage}`
       )
       return
     }
@@ -84,7 +85,7 @@ export default function Home() {
 
     if (oversizedFiles.length > 0) {
       alert(
-        `The following file${oversizedFiles.length > 1 ? 's' : ''} exceed${oversizedFiles.length > 1 ? '' : 's'} the maximum size of ${maxFileSizeMB}MB:\n${oversizedFiles.join('\n')}`
+        `The following file${oversizedFiles.length > 1 ? 's' : ''} exceed${oversizedFiles.length > 1 ? '' : 's'} the maximum size of ${maxFileSizeMB}MB:\n${oversizedFiles.join('\n')}\n\n${limitMessage}`
       )
     }
 
