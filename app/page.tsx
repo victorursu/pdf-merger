@@ -677,10 +677,27 @@ export default function Home() {
                         <>
                           <select
                             className={styles.coverPageSelect}
-                            value={pdfFile.coverPageText && !predefinedDividerTexts.includes(pdfFile.coverPageText) ? 'other' : pdfFile.coverPageText}
+                            value={
+                              pdfFile.coverPageText && predefinedDividerTexts.includes(pdfFile.coverPageText)
+                                ? pdfFile.coverPageText
+                                : pdfFile.coverPageText
+                                ? 'other'
+                                : ''
+                            }
                             onChange={(e) => {
                               const value = e.target.value
                               if (value === 'other') {
+                                // Keep current text if it exists, otherwise clear
+                                if (!pdfFile.coverPageText || predefinedDividerTexts.includes(pdfFile.coverPageText)) {
+                                  setPdfFiles((prev) =>
+                                    prev.map((file) =>
+                                      file.id === pdfFile.id
+                                        ? { ...file, coverPageText: '' }
+                                        : file
+                                    )
+                                  )
+                                }
+                              } else if (value === '') {
                                 setPdfFiles((prev) =>
                                   prev.map((file) =>
                                     file.id === pdfFile.id
@@ -709,7 +726,7 @@ export default function Home() {
                             ))}
                             <option value="other">Other...</option>
                           </select>
-                          {(pdfFile.coverPageText === '' || !predefinedDividerTexts.includes(pdfFile.coverPageText)) && (
+                          {(!pdfFile.coverPageText || !predefinedDividerTexts.includes(pdfFile.coverPageText)) && (
                             <input
                               type="text"
                               className={styles.coverPageInput}
