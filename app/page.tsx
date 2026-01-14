@@ -905,6 +905,15 @@ export default function Home() {
                   When enabled, page numbers appear at the bottom center of each page (e.g., "Page 1", "Page 2").
                 </p>
               </div>
+
+              <div className={styles.helpSection}>
+                <h3 className={styles.helpSectionTitle}>Settings</h3>
+                <p className={styles.helpText}>
+                  Use the settings icon (gear) to customize the divider page font size and create predefined divider text options. 
+                  These settings are saved in cookies on your computer and are specific to each browser. 
+                  <strong>Settings will not carry over between different computers or browsers.</strong>
+                </p>
+              </div>
             </div>
           </div>
         </div>
