@@ -182,6 +182,150 @@
   font-weight: 600;
 }
 
+.settingsSection {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.settingsSection:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settingsLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.settingsInput {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.settingsInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.settingsHint {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+}
+
+.predefinedTextsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.predefinedTextItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.predefinedTextInput {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.predefinedTextInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.removeTextButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.removeTextButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.addTextButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.addTextButton:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.settingsButton {
+  position: fixed;
+  top: 1.5rem;
+  right: 6rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.settingsButton:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  transform: scale(1.05);
+}
+
+.settingsButton:active {
+  transform: scale(0.95);
+}
+
 .themeToggle {
   position: fixed;
   top: 1.5rem;
@@ -442,6 +586,26 @@
   cursor: pointer;
   accent-color: var(--accent);
   flex-shrink: 0;
+}
+
+.coverPageSelect {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.coverPageSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-hover);
 }
 
 .coverPageInput {
@@ -820,6 +984,13 @@
 
   .dropZone {
     padding: 2rem 1rem;
+  }
+
+  .settingsButton {
+    top: 1rem;
+    right: 4.5rem;
+    width: 40px;
+    height: 40px;
   }
 
   .themeToggle {

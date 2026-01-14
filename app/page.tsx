@@ -35,12 +35,41 @@ export default function Home() {
   const [displayPageNumber, setDisplayPageNumber] = useState(true)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
   const [showHelpModal, setShowHelpModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [fontSize, setFontSize] = useState('')
+  const [predefinedDividerTexts, setPredefinedDividerTexts] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // Initialize theme from document
     const initialTheme = document.documentElement.getAttribute('data-theme') as 'light' | 'dark' || 'dark'
     setTheme(initialTheme)
+
+    // Load font size from cookies
+    const savedFontSize = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('divider_font_size='))
+      ?.split('=')[1]
+    if (savedFontSize) {
+      setFontSize(savedFontSize)
+    }
+
+    // Load predefined divider texts from cookies
+    const savedTexts = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('predefined_divider_texts='))
+      ?.split('=')[1]
+    if (savedTexts) {
+      try {
+        const decoded = decodeURIComponent(savedTexts)
+        const parsed = JSON.parse(decoded)
+        if (Array.isArray(parsed)) {
+          setPredefinedDividerTexts(parsed)
+        }
+      } catch (e) {
+        console.error('Error parsing predefined divider texts:', e)
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -247,11 +276,14 @@ export default function Home() {
           const coverPage = mergedPdf.addPage([612, 792])
           const { width, height } = coverPage.getSize()
           
-          // Get font size from environment variable, default to 24
-          const coverFontSize = parseInt(
-            process.env.NEXT_PUBLIC_COVER_PAGE_FONT_SIZE || '24',
-            10
-          )
+          // Get font size from cookies or environment variable, default to 24
+          const savedFontSize = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('divider_font_size='))
+            ?.split('=')[1]
+          const coverFontSize = savedFontSize
+            ? parseInt(savedFontSize, 10)
+            : parseInt(process.env.NEXT_PUBLIC_COVER_PAGE_FONT_SIZE || '24', 10)
           
           // Split text by | to create multiple lines
           const textLines = pdfFile.coverPageText.split('|').map((line) => line.trim())
@@ -424,6 +456,25 @@ export default function Home() {
           className={styles.bmcButtonImage}
         />
       </a>
+      <button
+        className={styles.settingsButton}
+        onClick={() => setShowSettingsModal(true)}
+        aria-label="Settings"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24" />
+        </svg>
+      </button>
       <button
         className={styles.themeToggle}
         onClick={toggleTheme}
@@ -623,23 +674,61 @@ export default function Home() {
                         <span>Divider page</span>
                       </label>
                       {pdfFile.hasCoverPage && (
-                        <input
-                          type="text"
-                          className={styles.coverPageInput}
-                          value={pdfFile.coverPageText}
-                          onChange={(e) => {
-                            setPdfFiles((prev) =>
-                              prev.map((file) =>
-                                file.id === pdfFile.id
-                                  ? { ...file, coverPageText: e.target.value }
-                                  : file
-                              )
-                            )
-                          }}
-                          placeholder="Divider text"
-                          onClick={(e) => e.stopPropagation()}
-                          onFocus={(e) => e.stopPropagation()}
-                        />
+                        <>
+                          <select
+                            className={styles.coverPageSelect}
+                            value={pdfFile.coverPageText && !predefinedDividerTexts.includes(pdfFile.coverPageText) ? 'other' : pdfFile.coverPageText}
+                            onChange={(e) => {
+                              const value = e.target.value
+                              if (value === 'other') {
+                                setPdfFiles((prev) =>
+                                  prev.map((file) =>
+                                    file.id === pdfFile.id
+                                      ? { ...file, coverPageText: '' }
+                                      : file
+                                  )
+                                )
+                              } else {
+                                setPdfFiles((prev) =>
+                                  prev.map((file) =>
+                                    file.id === pdfFile.id
+                                      ? { ...file, coverPageText: value }
+                                      : file
+                                  )
+                                )
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            onFocus={(e) => e.stopPropagation()}
+                          >
+                            <option value="">Select divider text...</option>
+                            {predefinedDividerTexts.map((text, idx) => (
+                              <option key={idx} value={text}>
+                                {text}
+                              </option>
+                            ))}
+                            <option value="other">Other...</option>
+                          </select>
+                          {(pdfFile.coverPageText === '' || !predefinedDividerTexts.includes(pdfFile.coverPageText)) && (
+                            <input
+                              type="text"
+                              className={styles.coverPageInput}
+                              value={pdfFile.coverPageText}
+                              onChange={(e) => {
+                                setPdfFiles((prev) =>
+                                  prev.map((file) =>
+                                    file.id === pdfFile.id
+                                      ? { ...file, coverPageText: e.target.value }
+                                      : file
+                                  )
+                                )
+                              }}
+                              placeholder="Enter custom divider text"
+                              onClick={(e) => e.stopPropagation()}
+                              onFocus={(e) => e.stopPropagation()}
+                            />
+                          )}
+                        </>
                       )}
                     </div>
                     <div className={styles.fileInfo}>
@@ -798,6 +887,128 @@ export default function Home() {
                   Toggle this checkbox to show or hide page numbers on each page. 
                   When enabled, page numbers appear at the bottom center of each page (e.g., "Page 1", "Page 2").
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowSettingsModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={styles.modalClose}
+              onClick={() => setShowSettingsModal(false)}
+              aria-label="Close"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <h2 className={styles.modalTitle}>Settings</h2>
+            <div className={styles.modalBody}>
+              <div className={styles.settingsSection}>
+                <label className={styles.settingsLabel}>
+                  Divider Page Font Size (points)
+                </label>
+                <input
+                  type="number"
+                  className={styles.settingsInput}
+                  value={fontSize}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setFontSize(value)
+                    if (value) {
+                      document.cookie = `divider_font_size=${value}; path=/; max-age=31536000`
+                    } else {
+                      document.cookie = 'divider_font_size=; path=/; max-age=0'
+                    }
+                  }}
+                  placeholder={process.env.NEXT_PUBLIC_COVER_PAGE_FONT_SIZE || '24'}
+                />
+                <p className={styles.settingsHint}>
+                  Leave empty to use default from environment ({process.env.NEXT_PUBLIC_COVER_PAGE_FONT_SIZE || '24'}pt)
+                </p>
+              </div>
+
+              <div className={styles.settingsSection}>
+                <label className={styles.settingsLabel}>
+                  Predefined Divider Texts
+                </label>
+                <div className={styles.predefinedTextsList}>
+                  {predefinedDividerTexts.map((text, index) => (
+                    <div key={index} className={styles.predefinedTextItem}>
+                      <input
+                        type="text"
+                        className={styles.predefinedTextInput}
+                        value={text}
+                        onChange={(e) => {
+                          const newTexts = [...predefinedDividerTexts]
+                          newTexts[index] = e.target.value
+                          setPredefinedDividerTexts(newTexts)
+                          document.cookie = `predefined_divider_texts=${encodeURIComponent(JSON.stringify(newTexts))}; path=/; max-age=31536000`
+                        }}
+                      />
+                      <button
+                        className={styles.removeTextButton}
+                        onClick={() => {
+                          const newTexts = predefinedDividerTexts.filter((_, i) => i !== index)
+                          setPredefinedDividerTexts(newTexts)
+                          document.cookie = `predefined_divider_texts=${encodeURIComponent(JSON.stringify(newTexts))}; path=/; max-age=31536000`
+                        }}
+                        aria-label="Remove"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    className={styles.addTextButton}
+                    onClick={() => {
+                      const newTexts = [...predefinedDividerTexts, '']
+                      setPredefinedDividerTexts(newTexts)
+                      document.cookie = `predefined_divider_texts=${encodeURIComponent(JSON.stringify(newTexts))}; path=/; max-age=31536000`
+                    }}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
             </div>
           </div>
