@@ -33,6 +33,7 @@ export default function Home() {
   const [outputFileName, setOutputFileName] = useState('combined')
   const [footerText, setFooterText] = useState('')
   const [displayPageNumber, setDisplayPageNumber] = useState(true)
+  const [resizeImagesToA4, setResizeImagesToA4] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
   const [showHelpModal, setShowHelpModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
@@ -334,16 +335,52 @@ export default function Home() {
             image = await mergedPdf.embedJpg(arrayBuffer)
           }
 
-          // Create a page with the image dimensions
+          // Get original image dimensions
           const imageDims = image.scale(1)
-          const page = mergedPdf.addPage([imageDims.width, imageDims.height])
+          let imageWidth = imageDims.width
+          let imageHeight = imageDims.height
+          let pageWidth = imageWidth
+          let pageHeight = imageHeight
+          let x = 0
+          let y = 0
+
+          // Resize to A4 if checkbox is enabled
+          if (resizeImagesToA4) {
+            // A4 dimensions in points (portrait: 595.28 x 841.89)
+            const A4_WIDTH = 595.28
+            const A4_HEIGHT = 841.89
+
+            // Calculate scale ratios for both dimensions
+            const widthScaleRatio = A4_WIDTH / imageWidth
+            const heightScaleRatio = A4_HEIGHT / imageHeight
+
+            // Use the smaller scale ratio to ensure image fits within A4 bounds
+            const scaleRatio = Math.min(widthScaleRatio, heightScaleRatio)
+
+            // Only resize if image is larger than A4 in at least one dimension
+            if (scaleRatio < 1) {
+              imageWidth = imageWidth * scaleRatio
+              imageHeight = imageHeight * scaleRatio
+            }
+
+            // Create an A4 page
+            pageWidth = A4_WIDTH
+            pageHeight = A4_HEIGHT
+
+            // Center the image on the page
+            x = (A4_WIDTH - imageWidth) / 2
+            y = (A4_HEIGHT - imageHeight) / 2
+          }
+
+          // Create a page with calculated dimensions
+          const page = mergedPdf.addPage([pageWidth, pageHeight])
 
           // Draw the image on the page
           page.drawImage(image, {
-            x: 0,
-            y: 0,
-            width: imageDims.width,
-            height: imageDims.height,
+            x,
+            y,
+            width: imageWidth,
+            height: imageHeight,
           })
         }
       }
@@ -432,7 +469,7 @@ export default function Home() {
     } finally {
       setIsMerging(false)
     }
-  }, [pdfFiles, outputFileName, footerText, displayPageNumber, trackEvent])
+  }, [pdfFiles, outputFileName, footerText, displayPageNumber, resizeImagesToA4, trackEvent])
 
   return (
     <main className={styles.main}>
@@ -830,6 +867,17 @@ export default function Home() {
                   className={styles.toggleInput}
                 />
                 <span className={styles.toggleText}>Display page number</span>
+              </label>
+            </div>
+            <div className={styles.pageNumberToggleSection}>
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={resizeImagesToA4}
+                  onChange={(e) => setResizeImagesToA4(e.target.checked)}
+                  className={styles.toggleInput}
+                />
+                <span className={styles.toggleText}>Resize images to fit A4 paper</span>
               </label>
             </div>
             <button
