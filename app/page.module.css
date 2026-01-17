@@ -656,6 +656,12 @@
   object-fit: cover;
   border-radius: 4px;
   border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.fileThumbnail:hover {
+  transform: scale(1.05);
 }
 
 .fileContent {
@@ -980,6 +986,34 @@
   border-radius: 8px;
 }
 
+.imageHoverModal {
+  position: fixed;
+  pointer-events: auto;
+  z-index: 3000;
+  transform: translate(20px, -50%);
+  animation: fadeIn 0.2s ease;
+  width: 300px;
+  height: 300px;
+  max-width: 90vw;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.imageHoverPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 2rem 1.5rem;
@@ -1027,5 +1061,10 @@
   .popupContent {
     padding: 1.5rem;
     width: 95%;
+  }
+
+  .imageHoverModal {
+    width: 250px;
+    height: 250px;
   }
 }

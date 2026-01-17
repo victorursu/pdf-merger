@@ -40,6 +40,9 @@ export default function Home() {
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [fontSize, setFontSize] = useState('')
   const [predefinedDividerTexts, setPredefinedDividerTexts] = useState<string[]>([])
+  const [enlargePicturesOnHover, setEnlargePicturesOnHover] = useState(true)
+  const [hoveredImageUrl, setHoveredImageUrl] = useState<string | null>(null)
+  const [hoveredImagePosition, setHoveredImagePosition] = useState<{ x: number; y: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -71,6 +74,15 @@ export default function Home() {
       } catch (e) {
         console.error('Error parsing predefined divider texts:', e)
       }
+    }
+
+    // Load enlarge pictures on hover setting from cookies
+    const savedEnlargeSetting = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('enlarge_pictures_on_hover='))
+      ?.split('=')[1]
+    if (savedEnlargeSetting !== undefined) {
+      setEnlargePicturesOnHover(savedEnlargeSetting === 'true')
     }
   }, [])
 
@@ -210,6 +222,12 @@ export default function Home() {
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index)
+    // Clear hover state when dragging starts and revoke blob URL
+    if (hoveredImageUrl && hoveredImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(hoveredImageUrl)
+    }
+    setHoveredImageUrl(null)
+    setHoveredImagePosition(null)
   }
 
   const handleDragOverItem = (e: React.DragEvent, index: number) => {
@@ -223,13 +241,31 @@ export default function Home() {
   const handleDragEnd = () => {
     if (draggedIndex !== null && dragOverIndex !== null) {
       const newFiles = [...pdfFiles]
-      const draggedItem = newFiles[draggedIndex]
+      const originalItem = newFiles[draggedIndex]
+      
+      // Create a new object reference, explicitly preserving previewUrl
+      const draggedItem: PDFFile = {
+        ...originalItem,
+        previewUrl: originalItem.previewUrl, // Explicitly preserve previewUrl
+      }
+      
+      // Ensure previewUrl exists for image files (recreate if missing)
+      if (draggedItem && !draggedItem.previewUrl && 
+          (draggedItem.file.type === 'image/jpeg' || 
+           draggedItem.file.type === 'image/jpg' || 
+           draggedItem.file.type === 'image/png')) {
+        draggedItem.previewUrl = URL.createObjectURL(draggedItem.file)
+      }
+      
       newFiles.splice(draggedIndex, 1)
       newFiles.splice(dragOverIndex, 0, draggedItem)
       setPdfFiles(newFiles)
     }
     setDraggedIndex(null)
     setDragOverIndex(null)
+    // Clear hover state after reordering
+    setHoveredImageUrl(null)
+    setHoveredImagePosition(null)
   }
 
   const handleDropItem = (e: React.DragEvent, index: number) => {
@@ -237,13 +273,31 @@ export default function Home() {
     e.stopPropagation()
     if (draggedIndex !== null && draggedIndex !== index) {
       const newFiles = [...pdfFiles]
-      const draggedItem = newFiles[draggedIndex]
+      const originalItem = newFiles[draggedIndex]
+      
+      // Create a new object reference, explicitly preserving previewUrl
+      const draggedItem: PDFFile = {
+        ...originalItem,
+        previewUrl: originalItem.previewUrl, // Explicitly preserve previewUrl
+      }
+      
+      // Ensure previewUrl exists for image files (recreate if missing)
+      if (draggedItem && !draggedItem.previewUrl && 
+          (draggedItem.file.type === 'image/jpeg' || 
+           draggedItem.file.type === 'image/jpg' || 
+           draggedItem.file.type === 'image/png')) {
+        draggedItem.previewUrl = URL.createObjectURL(draggedItem.file)
+      }
+      
       newFiles.splice(draggedIndex, 1)
       newFiles.splice(index, 0, draggedItem)
       setPdfFiles(newFiles)
     }
     setDraggedIndex(null)
     setDragOverIndex(null)
+    // Clear hover state after dropping
+    setHoveredImageUrl(null)
+    setHoveredImagePosition(null)
   }
 
   const sanitizeFileName = (fileName: string): string => {
@@ -699,6 +753,44 @@ export default function Home() {
                         src={pdfFile.previewUrl}
                         alt={pdfFile.name}
                         className={styles.fileThumbnail}
+                        onMouseEnter={(e) => {
+                          if (enlargePicturesOnHover && draggedIndex === null) {
+                            // Recreate blob URL from file object to ensure it's valid
+                            const isImage = pdfFile.file.type === 'image/jpeg' || 
+                                          pdfFile.file.type === 'image/jpg' || 
+                                          pdfFile.file.type === 'image/png'
+                            
+                            if (isImage) {
+                              // Create a fresh blob URL from the file
+                              const url = URL.createObjectURL(pdfFile.file)
+                              setHoveredImageUrl(url)
+                              setHoveredImagePosition({
+                                x: e.clientX,
+                                y: e.clientY,
+                              })
+                            }
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          // Check if we're moving to the modal
+                          const relatedTarget = e.relatedTarget as HTMLElement
+                          if (!relatedTarget || !relatedTarget.closest(`.${styles.imageHoverModal}`)) {
+                            // Revoke the blob URL we created for hover
+                            if (hoveredImageUrl && hoveredImageUrl.startsWith('blob:')) {
+                              URL.revokeObjectURL(hoveredImageUrl)
+                            }
+                            setHoveredImageUrl(null)
+                            setHoveredImagePosition(null)
+                          }
+                        }}
+                        onMouseMove={(e) => {
+                          if (enlargePicturesOnHover && hoveredImageUrl && draggedIndex === null) {
+                            setHoveredImagePosition({
+                              x: e.clientX,
+                              y: e.clientY,
+                            })
+                          }
+                        }}
                       />
                     ) : (
                       <svg
@@ -1120,8 +1212,70 @@ export default function Home() {
                   </button>
                 </div>
               </div>
+
+              <div className={styles.settingsSection}>
+                <label className={styles.toggleLabel}>
+                  <input
+                    type="checkbox"
+                    checked={enlargePicturesOnHover}
+                    onChange={(e) => {
+                      const newValue = e.target.checked
+                      setEnlargePicturesOnHover(newValue)
+                      document.cookie = `enlarge_pictures_on_hover=${newValue}; path=/; max-age=31536000`
+                    }}
+                    className={styles.toggleInput}
+                  />
+                  <span className={styles.toggleText}>Enlarge pictures on hover</span>
+                </label>
+                <p className={styles.settingsHint}>
+                  When enabled, hovering over an image thumbnail in the file list will display a larger preview in a modal. 
+                  This makes it easier to see image details before merging.
+                </p>
+              </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Image Hover Modal */}
+      {hoveredImageUrl && enlargePicturesOnHover && hoveredImagePosition && (
+        <div
+          className={styles.imageHoverModal}
+          style={{
+            left: `${hoveredImagePosition.x}px`,
+            top: `${hoveredImagePosition.y}px`,
+          }}
+          onMouseEnter={(e) => {
+            e.stopPropagation()
+            // Keep modal visible when hovering over it
+          }}
+          onMouseLeave={() => {
+            // Revoke the blob URL we created for hover
+            if (hoveredImageUrl && hoveredImageUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(hoveredImageUrl)
+            }
+            setHoveredImageUrl(null)
+            setHoveredImagePosition(null)
+          }}
+        >
+          <img 
+            key={hoveredImageUrl}
+            src={hoveredImageUrl} 
+            alt="" 
+            className={styles.imageHoverPreview}
+            onError={(e) => {
+              console.error('Failed to load hover preview image:', hoveredImageUrl)
+              // Revoke the blob URL and hide the modal if image fails to load
+              if (hoveredImageUrl && hoveredImageUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(hoveredImageUrl)
+              }
+              setHoveredImageUrl(null)
+              setHoveredImagePosition(null)
+            }}
+            onLoad={() => {
+              console.log('Hover preview image loaded:', hoveredImageUrl)
+            }}
+          />
         </div>
       )}
     </main>
