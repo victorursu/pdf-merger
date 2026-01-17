@@ -22,6 +22,7 @@ interface PDFFile {
   size: number
   hasCoverPage: boolean
   coverPageText: string
+  previewUrl?: string // Object URL for image thumbnails
 }
 
 export default function Home() {
@@ -78,6 +79,17 @@ export default function Home() {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      pdfFiles.forEach((file) => {
+        if (file.previewUrl) {
+          URL.revokeObjectURL(file.previewUrl)
+        }
+      })
+    }
+  }, [pdfFiles])
+
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
@@ -125,6 +137,10 @@ export default function Home() {
       if (file.size > maxFileSizeBytes) {
         oversizedFiles.push(file.name)
       } else {
+        // Create preview URL for image files
+        const isImage = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png'
+        const previewUrl = isImage ? URL.createObjectURL(file) : undefined
+        
         newFiles.push({
           id: `${Date.now()}-${Math.random()}`,
           file,
@@ -132,6 +148,7 @@ export default function Home() {
           size: file.size,
           hasCoverPage: false,
           coverPageText: '',
+          previewUrl,
         })
       }
     })
@@ -182,7 +199,13 @@ export default function Home() {
   )
 
   const removeFile = useCallback((id: string) => {
-    setPdfFiles((prev) => prev.filter((file) => file.id !== id))
+    setPdfFiles((prev) => {
+      const fileToRemove = prev.find((file) => file.id === id)
+      if (fileToRemove?.previewUrl) {
+        URL.revokeObjectURL(fileToRemove.previewUrl)
+      }
+      return prev.filter((file) => file.id !== id)
+    })
   }, [])
 
   const handleDragStart = (index: number) => {
@@ -671,6 +694,12 @@ export default function Home() {
                         <line x1="16" y1="17" x2="8" y2="17" />
                         <polyline points="10 9 9 9 8 9" />
                       </svg>
+                    ) : pdfFile.previewUrl ? (
+                      <img
+                        src={pdfFile.previewUrl}
+                        alt={pdfFile.name}
+                        className={styles.fileThumbnail}
+                      />
                     ) : (
                       <svg
                         width="24"
@@ -949,6 +978,15 @@ export default function Home() {
                 <p className={styles.helpText}>
                   Toggle this checkbox to show or hide page numbers on each page. 
                   When enabled, page numbers appear at the bottom center of each page (e.g., "Page 1", "Page 2").
+                </p>
+              </div>
+
+              <div className={styles.helpSection}>
+                <h3 className={styles.helpSectionTitle}>Resize Images to Fit A4 Paper</h3>
+                <p className={styles.helpText}>
+                  When enabled, this checkbox automatically resizes large images to fit within A4 paper dimensions (595.28 x 841.89 points) 
+                  while maintaining the original aspect ratio. Images are centered on an A4 page. 
+                  If disabled, images will be added at their original size.
                 </p>
               </div>
 
