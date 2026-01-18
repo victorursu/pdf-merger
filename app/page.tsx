@@ -548,28 +548,33 @@ export default function Home() {
     }
   }, [pdfFiles, outputFileName, footerText, displayPageNumber, resizeImagesToA4, trackEvent])
 
+  // Check if Buy Me a Coffee button should be shown
+  const showBuyMeCoffee = process.env.NEXT_PUBLIC_SHOW_BUY_ME_COFFEE !== 'false'
+
   return (
     <main className={styles.main}>
-      <a
-        href="https://www.buymeacoffee.com/victoru"
-        target="_blank"
-        rel="noopener noreferrer"
-        className={styles.buyMeCoffeeButton}
-        aria-label="Buy me a coffee"
-        onClick={() => {
-          if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'buy_me_coffee_clicked', {
-              link_url: 'https://www.buymeacoffee.com/victoru',
-            })
-          }
-        }}
-      >
-        <img
-          src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-          alt="Buy Me A Coffee"
-          className={styles.bmcButtonImage}
-        />
-      </a>
+      {showBuyMeCoffee && (
+        <a
+          href="https://www.buymeacoffee.com/victoru"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.buyMeCoffeeButton}
+          aria-label="Buy me a coffee"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'buy_me_coffee_clicked', {
+                link_url: 'https://www.buymeacoffee.com/victoru',
+              })
+            }
+          }}
+        >
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            alt="Buy Me A Coffee"
+            className={styles.bmcButtonImage}
+          />
+        </a>
+      )}
       <button
         className={styles.helpButton}
         onClick={() => setShowHelpModal(true)}
