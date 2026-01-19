@@ -43,6 +43,9 @@ export default function Home() {
   const [enlargePicturesOnHover, setEnlargePicturesOnHover] = useState(true)
   const [hoveredImageUrl, setHoveredImageUrl] = useState<string | null>(null)
   const [hoveredImagePosition, setHoveredImagePosition] = useState<{ x: number; y: number } | null>(null)
+  const [isRefreshingDividerTexts, setIsRefreshingDividerTexts] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -328,6 +331,38 @@ export default function Home() {
     }
   }, [])
 
+  const refreshDividerTexts = useCallback(async () => {
+    setIsRefreshingDividerTexts(true)
+    try {
+      // Use Next.js API route to proxy the request and avoid CORS issues
+      const response = await fetch('/api/divider-texts')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      
+      // Extract items array from the response
+      if (data && Array.isArray(data.items)) {
+        setPredefinedDividerTexts(data.items)
+        // Save to cookies
+        document.cookie = `predefined_divider_texts=${encodeURIComponent(JSON.stringify(data.items))}; path=/; max-age=31536000`
+        // Show success modal instead of alert
+        setSuccessMessage(`Successfully loaded ${data.items.length} divider text${data.items.length !== 1 ? 's' : ''} from the service.`)
+        setShowSuccessModal(true)
+      } else {
+        throw new Error('Invalid response format: expected an object with an "items" array')
+      }
+    } catch (error) {
+      console.error('Error fetching divider texts:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      // Still use alert for errors since they're less frequent
+      alert(`Failed to fetch divider texts: ${errorMessage}`)
+    } finally {
+      setIsRefreshingDividerTexts(false)
+    }
+  }, [])
+
   const mergePDFs = useCallback(async () => {
     if (pdfFiles.length === 0) return
 
@@ -550,6 +585,10 @@ export default function Home() {
 
   // Check if Buy Me a Coffee button should be shown
   const showBuyMeCoffee = process.env.NEXT_PUBLIC_SHOW_BUY_ME_COFFEE !== 'false'
+  
+  // Check if divider text service is configured
+  const hasDividerTextService = process.env.NEXT_PUBLIC_DIVIDER_TEXT_SERVICE && 
+    process.env.NEXT_PUBLIC_DIVIDER_TEXT_SERVICE.trim() !== ''
 
   return (
     <main className={styles.main}>
@@ -574,6 +613,31 @@ export default function Home() {
             className={styles.bmcButtonImage}
           />
         </a>
+      )}
+      {hasDividerTextService && (
+        <button
+          className={styles.refreshButton}
+          onClick={refreshDividerTexts}
+          disabled={isRefreshingDividerTexts}
+          aria-label="Refresh divider texts"
+          title="Refresh divider texts from service"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={isRefreshingDividerTexts ? styles.refreshing : ''}
+          >
+            <path d="M23 4v6h-6" />
+            <path d="M1 20v-6h6" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.48L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </button>
       )}
       <button
         className={styles.helpButton}
@@ -1281,6 +1345,41 @@ export default function Home() {
               console.log('Hover preview image loaded:', hoveredImageUrl)
             }}
           />
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowSuccessModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={styles.modalClose}
+              onClick={() => setShowSuccessModal(false)}
+              aria-label="Close"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <h2 className={styles.modalTitle}>Success</h2>
+            <div className={styles.modalBody}>
+              <div className={styles.helpSection}>
+                <p className={styles.helpText} style={{ marginBottom: 0 }}>
+                  {successMessage}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </main>
